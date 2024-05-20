@@ -6,6 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 import LeftDashboard from '../../components/Dashboard/LeftDashboard';
 import Home from '../../components/Dashboard/Home';
 import Promotions from '../../components/Dashboard/Promotions';
+import { Box } from '@mui/material';
 
 function Dashboard() {
   // Avatar state
@@ -48,8 +49,8 @@ function Dashboard() {
                 'aria-labelledby': 'basic-button',
               }}
             >
-              <MenuItem onClick={handleClose}>Profile</MenuItem>
-              <MenuItem onClick={handleClose}>Logout</MenuItem>
+              <MenuItem style={{width:"120px"}} onClick={handleClose}>Profile</MenuItem>
+              <MenuItem style={{width:"120px"}} onClick={handleClose}>Logout</MenuItem>
             </Menu>
             <span>Akira Rizky</span>
           </div>
@@ -59,10 +60,10 @@ function Dashboard() {
         </div>
       </div>
       <div className="right-dashboard">
-        <div className="wrapper-right-dashboard">
+        <Box sx={{ boxShadow: 3 }} className="wrapper-right-dashboard">
           {selectedComponent === 'home' && <Home />}
           {selectedComponent === 'promotions' && <Promotions />}
-        </div>
+        </Box>
       </div>
     </div>
   );

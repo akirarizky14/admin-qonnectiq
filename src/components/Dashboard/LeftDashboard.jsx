@@ -24,12 +24,12 @@ import { TreeItem2Provider } from '@mui/x-tree-view/TreeItem2Provider';
 import { TreeItem2Icon } from '@mui/x-tree-view/TreeItem2Icon';
 
 const CustomTreeItemRoot = styled(TreeItem2Root)(({ theme }) => ({
-  color: theme.palette.text.secondary,
+  color: "white",
 }));
 
 const CustomTreeItemContent = styled(TreeItem2Content)(({ theme }) => ({
   marginBottom: theme.spacing(0.3),
-  color: theme.palette.text.secondary,
+  color: "white",
   borderRadius: theme.spacing(2),
   paddingRight: theme.spacing(1),
   fontWeight: theme.typography.fontWeightMedium,
@@ -164,7 +164,7 @@ export default function LeftDashboard({ name, onItemSelect }) {
           itemId="8"
           label="Promotions"
           labelIcon={LocalOfferIcon}
-          labelInfo="733"
+          labelInfo=""
           color="#3c8039"
           bgColor="#e6f4ea"
           colorForDarkMode="#CCE8CD"
