@@ -1,0 +1,16 @@
+.container-navbar{
+    width: 300px;
+    height: 100vh;
+    background-color: #FCFCFC;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.wrapper-navbar{
+    width: 90%;
+    height: 90%;
+}
+.list-navbar{
+    display: flex;
+    flex-direction: column;
+}
