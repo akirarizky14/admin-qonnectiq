@@ -1,22 +1,24 @@
-import React from 'react'
-import {BrowserRouter,Routes,Route} from 'react-router-dom'
-import Login from '../views/Login/Login'
-import '../css/routes/GlobalRoutes.css'
-import Dashboard from '../views/Dashboard/Dashboard'
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from '../views/Login/Login';
+import '../css/routes/GlobalRoutes.css';
+import Dashboard from '../views/Dashboard/Dashboard';
+import { useAuthContext } from '../hooks/useAuthContext';
 
 function GlobalRoutes() {
+  const { user } = useAuthContext();
+
   return (
-    <>
-        <BrowserRouter>
-          <div className="BrowserRouter">
-            <Routes className="Routes">
-                <Route path='/' element={<Login/>}/>
-                <Route path='/dashboard' element={<Dashboard/>}/>
-            </Routes>
-          </div>
-        </BrowserRouter>
-    </>
-  )
+    <BrowserRouter>
+      <div className="BrowserRouter">
+        <Routes>
+          <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+          <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
+          <Route path="*" element={<Navigate to="/" />} /> 
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
 }
 
-export default GlobalRoutes
+export default GlobalRoutes;

@@ -7,8 +7,10 @@ import LeftDashboard from '../../components/Dashboard/LeftDashboard';
 import Home from '../../components/Dashboard/Home';
 import Promotions from '../../components/Dashboard/Promotions';
 import { Box } from '@mui/material';
-
+import { useLogout } from '../../hooks/useLogout';
+import { useNavigate } from 'react-router-dom';
 function Dashboard() {
+    const navigate = useNavigate();
   // Avatar state
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -21,11 +23,15 @@ function Dashboard() {
 
   // State to manage the displayed component
   const [selectedComponent, setSelectedComponent] = useState('home');
-
   const handleItemSelect = (item) => {
     setSelectedComponent(item);
   };
 
+  const {logout} = useLogout()
+  const handleLogout = () =>{
+    logout()
+    navigate('/')
+  }
   return (
     <div className="container-dashboard">
       <div className="left-dashboard">
@@ -50,7 +56,7 @@ function Dashboard() {
               }}
             >
               <MenuItem style={{width:"120px"}} onClick={handleClose}>Profile</MenuItem>
-              <MenuItem style={{width:"120px"}} onClick={handleClose}>Logout</MenuItem>
+              <MenuItem style={{width:"120px"}} onClick={handleLogout}>Logout</MenuItem>
             </Menu>
             <span>Akira Rizky</span>
           </div>
