@@ -41,8 +41,9 @@
 }
 .wrapper-right-dashboard{
     width: 90%;
-    height: 90%;
+    height: 80%;
     border-radius: 1%;
+    padding: 3%;
 }
 
 .user-home-dashboard{

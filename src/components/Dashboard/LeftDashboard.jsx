@@ -4,13 +4,11 @@ import { styled, useTheme, alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Label from '@mui/icons-material/Label';
-import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
-import InfoIcon from '@mui/icons-material/Info';
-import ForumIcon from '@mui/icons-material/Forum';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import PersonIcon from '@mui/icons-material/Person';
 
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import {
@@ -159,7 +157,18 @@ export default function LeftDashboard({ name, onItemSelect }) {
         labelIcon={DashboardIcon}
         onClick={() => onItemSelect('home')}
       />
-      <CustomTreeItem itemId="3" label="Categories" labelIcon={Label}>
+      <CustomTreeItem itemId="3" label="Products" labelIcon={Label}>
+        <CustomTreeItem
+          itemId="7"
+          label="Product"
+          labelIcon={LocalOfferIcon}
+          labelInfo=""
+          color="#3c8039"
+          bgColor="#e6f4ea"
+          colorForDarkMode="#CCE8CD"
+          bgColorForDarkMode={alpha('#64ff6a', 0.2)}
+          onClick={() => onItemSelect('product')}
+        />
         <CustomTreeItem
           itemId="8"
           label="Promotions"
@@ -172,6 +181,12 @@ export default function LeftDashboard({ name, onItemSelect }) {
           onClick={() => onItemSelect('promotions')}
         />
       </CustomTreeItem>
+      <CustomTreeItem
+        itemId="10"
+        label="Users"
+        labelIcon={PersonIcon}
+        onClick={() => onItemSelect('users')}
+      />
     </SimpleTreeView>
   );
 }

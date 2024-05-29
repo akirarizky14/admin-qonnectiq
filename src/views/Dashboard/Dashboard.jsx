@@ -6,9 +6,11 @@ import MenuItem from '@mui/material/MenuItem';
 import LeftDashboard from '../../components/Dashboard/LeftDashboard';
 import Home from '../../components/Dashboard/Home';
 import Promotions from '../../components/Dashboard/Promotions';
+import User from '../../components/Dashboard/User';
 import { Box } from '@mui/material';
 import { useLogout } from '../../hooks/useLogout';
 import { useNavigate } from 'react-router-dom';
+import Product from '../../components/Dashboard/Products/Product';
 function Dashboard() {
     const navigate = useNavigate();
   // Avatar state
@@ -68,7 +70,9 @@ function Dashboard() {
       <div className="right-dashboard">
         <Box sx={{ boxShadow: 3 }} className="wrapper-right-dashboard">
           {selectedComponent === 'home' && <Home />}
+          {selectedComponent === 'product' && <Product />}
           {selectedComponent === 'promotions' && <Promotions />}
+          {selectedComponent === 'users' && <User />}
         </Box>
       </div>
     </div>
