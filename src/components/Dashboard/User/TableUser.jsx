@@ -22,32 +22,24 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 
-// Simpan struktur data pengguna dalam konstanta
 const headCells = [
-  {
-    id: 'full_name',
-    numeric: false,
-    disablePadding: true,
-    label: 'Full Name',
-  },
-  {
-    id: 'email',
-    numeric: false,
-    disablePadding: false,
-    label: 'Email',
-  },
-  {
-    id: 'roles',
-    numeric: false,
-    disablePadding: false,
-    label: 'Role',
-  },
-  {
-    id: 'created',
-    numeric: false,
-    disablePadding: false,
-    label: 'Created',
-  },
+  { id: 'id', numeric: false, disablePadding: true, label: 'User ID' },
+  { id: 'full_name', numeric: false, disablePadding: true, label: 'Full Name' },
+  { id: 'nick_name', numeric: false, disablePadding: false, label: 'Nick Name' },
+  { id: 'gender', numeric: false, disablePadding: false, label: 'Gender' },
+  { id: 'email', numeric: false, disablePadding: false, label: 'Email' },
+  { id: 'born', numeric: false, disablePadding: false, label: 'Born' },
+  { id: 'job_positions', numeric: false, disablePadding: false, label: 'Job Position' },
+  { id: 'job_industries', numeric: false, disablePadding: false, label: 'Job Industry' },
+  { id: 'roles', numeric: false, disablePadding: false, label: 'Role' },
+  { id: 'created', numeric: false, disablePadding: false, label: 'Created' },
+  { id: 'photos ', numeric: false, disablePadding: false, label: 'Photos' },
+  { id: 'isEmailVerified', numeric: false, disablePadding: false, label: 'Email Verification' },
+  { id: 'countries', numeric: false, disablePadding: false, label: 'Country' },
+  { id: 'provinces', numeric: false, disablePadding: false, label: 'Province' },
+  { id: 'cities', numeric: false, disablePadding: false, label: 'City' },
+  { id: 'district', numeric: false, disablePadding: false, label: 'District' },
+  { id: 'otp', numeric: false, disablePadding: false, label: 'OTP' }
 ];
 
 function EnhancedTableHead(props) {
@@ -109,6 +101,31 @@ EnhancedTableHead.propTypes = {
 function EnhancedTableToolbar(props) {
   const { numSelected } = props;
 
+  const handleDelete = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user || !user.token) {
+        throw new Error('No token found');
+      }
+      const selectedUserId = selected[0];
+      const response = await fetch(`http://localhost:5000/v1/api/superadmin/users/${selectedUserId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const updatedUsers = users.filter(user => user._id !== selectedUserId);
+      setUsers(updatedUsers);
+      setSelected([]);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
+  };
+
   return (
     <Toolbar
       sx={{
@@ -142,7 +159,7 @@ function EnhancedTableToolbar(props) {
 
       {numSelected > 0 ? (
         <Tooltip title="Delete">
-          <IconButton>
+          <IconButton onClick={handleDelete}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
@@ -306,17 +323,17 @@ const descendingComparator = (a, b) => {
             />
             <TableBody>
               {visibleRows.map((row, index) => {
-                const isItemSelected = isSelected(row.id);
+                const isItemSelected = isSelected(row._id);
                 const labelId = `enhanced-table-checkbox-${index}`;
 
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row.id)}
+                    onClick={(event) => handleClick(event, row._id)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
-                    key={row.id}
+                    key={row._id}
                     selected={isItemSelected}
                     sx={{ cursor: 'pointer' }}
                   >
@@ -324,32 +341,44 @@ const descendingComparator = (a, b) => {
                       <Checkbox
                         color="primary"
                         checked={isItemSelected}
-                        inputProps={{
-                          'aria-labelledby': labelId,
-                        }}
+                        inputProps={{ 'aria-labelledby': labelId }}
                       />
                     </TableCell>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
-                    >
+                    <TableCell align="left">{row._id}</TableCell>
+                    <TableCell component="th" id={labelId} scope="row" padding="none">
                       {row.full_name}
                     </TableCell>
-                    <TableCell align="right">{row.email}</TableCell>
-                    <TableCell align="right">{row.roles}</TableCell>
-                    <TableCell align="right">{row.created}</TableCell>
+                    <TableCell align="left">{row.nick_name}</TableCell>
+                    <TableCell align="left">{row.gender}</TableCell>
+                    <TableCell align="left">{row.email}</TableCell><TableCell align="left">
+                      {row.born ? new Date(row.born).toLocaleDateString('en-CA') : ''}
+                    </TableCell>
+                    <TableCell align="left">{row.job_positions}</TableCell>
+                    <TableCell align="left">{row.job_industries}</TableCell>
+                    <TableCell align="left">{row.roles}</TableCell>
+                    <TableCell align="left">
+                      {new Date(row.created).toLocaleString('en-CA', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      })}
+                    </TableCell>
+                    <TableCell align="left">{row.photos}</TableCell>
+                    <TableCell align="left">{row.isEmailVerified ? "True" : "False"}</TableCell>
+                    <TableCell align="left">{row.countries}</TableCell>
+                    <TableCell align="left">{row.provinces}</TableCell>
+                    <TableCell align="left">{row.cities}</TableCell>
+                    <TableCell align="left">{row.district}</TableCell>
+                    <TableCell align="left">{row.otp}</TableCell>
                   </TableRow>
                 );
               })}
               {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: (dense ? 33 : 53) * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
+                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
+                  <TableCell colSpan={9} />
                 </TableRow>
               )}
             </TableBody>
