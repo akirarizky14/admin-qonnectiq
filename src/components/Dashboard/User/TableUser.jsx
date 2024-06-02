@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useEffect, useState,useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -16,13 +16,16 @@ import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
-
+import EditIcon from '@mui/icons-material/Edit';
+import { Dialog, DialogTitle, DialogContent, DialogActions,TextField,Button } from '@mui/material';
+import Snackbar from '@mui/material/Snackbar';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 const headCells = [
+  { id: 'edit', numeric: false, disablePadding: true, label: 'Edit' },
   { id: 'id', numeric: false, disablePadding: true, label: 'User ID' },
   { id: 'full_name', numeric: false, disablePadding: true, label: 'Full Name' },
   { id: 'nick_name', numeric: false, disablePadding: false, label: 'Nick Name' },
@@ -99,8 +102,8 @@ EnhancedTableHead.propTypes = {
 };
 
 function EnhancedTableToolbar(props) {
-  const { numSelected } = props;
-
+  const { numSelected, selected, setUsers, users, setSelected } = props;
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const handleDelete = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
@@ -116,7 +119,7 @@ function EnhancedTableToolbar(props) {
         },
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        setSnackbarOpen(true);
       }
       const updatedUsers = users.filter(user => user._id !== selectedUserId);
       setUsers(updatedUsers);
@@ -129,7 +132,7 @@ function EnhancedTableToolbar(props) {
   return (
     <Toolbar
       sx={{
-        pl: { sm: 2 },
+        pl: { sm: 2 },  
         pr: { xs: 1, sm: 1 },
         ...(numSelected > 0 && {
           bgcolor: (theme) =>
@@ -137,6 +140,11 @@ function EnhancedTableToolbar(props) {
         }),
       }}
     >
+      <Snackbar
+        open={snackbarOpen} // Atur properti open berdasarkan state
+        autoHideDuration={6000}
+        message="You Can't delete all user"
+      />
       {numSelected > 0 ? (
         <Typography
           sx={{ flex: '1 1 100%' }}
@@ -176,19 +184,101 @@ function EnhancedTableToolbar(props) {
 
 EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
+  selected: PropTypes.array.isRequired,
+  setUsers: PropTypes.func.isRequired,
+  users: PropTypes.array.isRequired,
 };
 
 export default function TableUser() {
-  const [order, setOrder] = React.useState('asc');
-  const [orderBy, setOrderBy] = React.useState('full_name');
-  const [selected, setSelected] = React.useState([]);
-  const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [users, setUsers] = React.useState([]);
+  const [order, setOrder] = useState('asc');
+  const [orderBy, setOrderBy] = useState('full_name');
+  const [selected, setSelected] = useState([]);
+  const [page, setPage] = useState(0);
+  const [dense, setDense] = useState(true);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [users, setUsers] = useState([]);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editUser, setEditUser] = useState({
+    email: '',
+    full_name: '',
+    nick_name: '',
+    gender: '',
+    password: '',
+    born: '',
+    ads: '',
+    job_positions: '',
+    job_industries: '',
+    countries: '',
+    provinces: '',
+    cities: '',
+    district: '',
+    roles: '',
+    photos: '',
+    otp: '',
+    isEmailVerified: false,
+  });
+  const handleEditClick = (user) => {
+    setEditUser({
+      _id: user._id,
+      email: user.email || '',
+      full_name: user.full_name || '',
+      nick_name: user.nick_name || '',
+      gender: user.gender || '',
+      password: user.password || '',
+      born: user.born || '',
+      ads: user.ads || '',
+      job_positions: user.job_positions || '',
+      job_industries: user.job_industries || '',
+      countries: user.countries || '',
+      provinces: user.provinces || '',
+      cities: user.cities || '',
+      district: user.district || '',
+      roles: user.roles || '',
+      photos: user.photos || '',
+      otp: user.otp || '',
+      isEmailVerified: user.isEmailVerified || false,
+    });
+    setIsEditOpen(true);
+  };
 
-  // Panggil API untuk mendapatkan data pengguna
-  React.useEffect(() => {
+  const handleEditClose = () => {
+    setIsEditOpen(false);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditUser({ ...editUser, [name]: value });
+  };
+  
+  const handleEditSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user || !user.token) {
+        throw new Error('No token found');
+      }
+      const response = await fetch(`http://localhost:5000/v1/api/superadmin/users/${editUser._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editUser),
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const updatedUser = await response.json();
+      const updatedUsers = users.map(user => user._id === updatedUser._id ? updatedUser : user);
+      setUsers(updatedUsers);
+      setIsEditOpen(false);
+    } catch (error) {
+      console.error('Error updating user:', error);
+    }
+  };
+
+  
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -219,24 +309,21 @@ export default function TableUser() {
     setOrderBy(property);
   };
   // Fungsi perbandingan untuk sorting data
-const getComparator = (order, orderBy) => {
-  return order === 'desc'
-      ? (a, b) => descendingComparator(a[orderBy], b[orderBy])
-      : (a, b) => -descendingComparator(a[orderBy], b[orderBy]);
-};
+  const getComparator = (order, orderBy) => {
+    return order === 'desc'
+        ? (a, b) => descendingComparator(a[orderBy], b[orderBy])
+        : (a, b) => -descendingComparator(a[orderBy], b[orderBy]);
+  };
 
-// Fungsi untuk membandingkan dua nilai dan mengurutkannya secara menurun
-const descendingComparator = (a, b) => {
-  if (b < a) {
-      return -1;
-  }
-  if (b > a) {
-      return 1;
-  }
-  return 0;
-};
-
-
+  const descendingComparator = (a, b) => {
+    if (b < a) {
+        return -1;
+    }
+    if (b > a) {
+        return 1;
+    }
+    return 0;
+  };
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
       const newSelected = users.map((user) => user.id);
@@ -274,10 +361,6 @@ const descendingComparator = (a, b) => {
     setPage(0);
   };
 
-  const handleChangeDense = (event) => {
-    setDense(event.target.checked);
-  };
-
   const isSelected = (id) => selected.indexOf(id) !== -1;
   function stableSort(array, comparator) {
     const stabilizedThis = array.map((el, index) => [el, index]);
@@ -294,7 +377,7 @@ const descendingComparator = (a, b) => {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
 
-  const visibleRows = React.useMemo(
+  const visibleRows = useMemo(
     () =>
       stableSort(users, getComparator(order, orderBy)).slice(
         page * rowsPerPage,
@@ -306,7 +389,13 @@ const descendingComparator = (a, b) => {
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar 
+          setSelected={setSelected}
+          numSelected={selected.length} 
+          selected={selected} 
+          setUsers={setUsers} 
+          users={users}
+        />
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -344,13 +433,19 @@ const descendingComparator = (a, b) => {
                         inputProps={{ 'aria-labelledby': labelId }}
                       />
                     </TableCell>
+                    <TableCell align="left">
+                      <IconButton onClick={() => handleEditClick(row)}>
+                        <EditIcon />
+                      </IconButton>
+                    </TableCell>
                     <TableCell align="left">{row._id}</TableCell>
                     <TableCell component="th" id={labelId} scope="row" padding="none">
                       {row.full_name}
                     </TableCell>
                     <TableCell align="left">{row.nick_name}</TableCell>
                     <TableCell align="left">{row.gender}</TableCell>
-                    <TableCell align="left">{row.email}</TableCell><TableCell align="left">
+                    <TableCell align="left">{row.email}</TableCell>
+                    <TableCell align="left">
                       {row.born ? new Date(row.born).toLocaleDateString('en-CA') : ''}
                     </TableCell>
                     <TableCell align="left">{row.job_positions}</TableCell>
@@ -394,11 +489,164 @@ const descendingComparator = (a, b) => {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
+      {isEditOpen && (
+        <Dialog open={isEditOpen} onClose={handleEditClose}>
+        <DialogTitle>Edit User</DialogTitle>
+        <DialogContent>
+        <Box component="form" onSubmit={handleEditSubmit} sx={{ m: 2 }}>
+          <Typography variant="h6">Edit User</Typography>
+          <TextField
+            name="email"
+            label="Email"
+            value={editUser.email}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="full_name"
+            label="Full Name"
+            value={editUser.full_name}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="nick_name"
+            label="Nick Name"
+            value={editUser.nick_name}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="gender"
+            label="Gender"
+            value={editUser.gender}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="password"
+            label="Password"
+            type="password"
+            value={editUser.password}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="born"
+            label="Born"
+            type="date"
+            value={editUser.born}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            name="ads"
+            label="Ads"
+            value={editUser.ads}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="job_positions"
+            label="Job Positions"
+            value={editUser.job_positions}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="job_industries"
+            label="Job Industries"
+            value={editUser.job_industries}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="countries"
+            label="Countries"
+            value={editUser.countries}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="provinces"
+            label="Provinces"
+            value={editUser.provinces}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="cities"
+            label="Cities"
+            value={editUser.cities}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="district"
+            label="District"
+            value={editUser.district}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="roles"
+            label="Roles"
+            value={editUser.roles}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="photos"
+            label="Photos"
+            value={editUser.photos}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="otp"
+            label="OTP"
+            value={editUser.otp}
+            onChange={handleEditChange}
+            fullWidth
+            margin="normal"
+          />
+          <FormControlLabel
+            label="Email Verification"
+            control={
+              <Switch
+                name="isEmailVerified"
+                color="primary"
+                checked={editUser.isEmailVerified}
+                onChange={(event) => setEditUser({ ...editUser, isEmailVerified: event.target.checked })}
+              />
+            }
+          />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditClose}>Cancel</Button>
+          <Button onClick={handleEditSubmit} variant="contained" color="primary">
+            Update
+          </Button>
+        </DialogActions>
+      </Dialog>
+      )}
     </Box>
   );
 }
-
