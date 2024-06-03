@@ -1,5 +1,5 @@
 import React from 'react'
-import Table_Categories from './Table_Categories'
+import TableCategories from './TableCategories'
 
 function Product() {
   return (
@@ -7,8 +7,7 @@ function Product() {
         <div className="wrapper-product">
             <div className="table-categories">
                 <h1>Table Categories</h1>
-                
-                <Table_Categories/>
+                <TableCategories/>
             </div>
         </div>
     </div>
