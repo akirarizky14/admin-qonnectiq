@@ -26,10 +26,17 @@ import AddIcon from '@mui/icons-material/Add';
 
 const headCells = [
   { id: 'edit', numeric: false, disablePadding: true, label: 'Edit' },
-  { id: 'id', numeric: false, disablePadding: true, label: 'Category ID' },
-  { id: 'name_cat', numeric: false, disablePadding: true, label: 'Name Categories' },
-  { id: 'desc', numeric: false, disablePadding: false, label: 'Description' },
-  { id: 'user_id', numeric: false, disablePadding: false, label: 'Created By' },
+  { id: 'id', numeric: false, disablePadding: true, label: 'Course ID' },
+  { id: 'title', numeric: false, disablePadding: true, label: 'Title' },
+  { id: 'description', numeric: false, disablePadding: false, label: 'Description' },
+  { id: 'difficulty', numeric: false, disablePadding: false, label: 'Difficulty' },
+  { id: 'cat_type', numeric: false, disablePadding: false, label: 'Category Type' },
+  { id: 'price', numeric: false, disablePadding: false, label: 'Price' },
+  { id: 'stars', numeric: false, disablePadding: false, label: 'Stars' },
+  { id: 'file', numeric: false, disablePadding: false, label: 'File' },
+  { id: 'created_at', numeric: false, disablePadding: false, label: 'Created' },
+  { id: 'created_by', numeric: false, disablePadding: false, label: 'Created By' },
+  { id: 'thumbnail', numeric: false, disablePadding: false, label: 'Thumbnail' },
 ];
 
 function EnhancedTableHead(props) {
@@ -97,7 +104,7 @@ function EnhancedTableToolbar(props) {
         throw new Error('No token found');
       }
       const selectedUserId = selected[0];
-      const response = await fetch(`http://localhost:5000/v1/api/superadmin/categories/deleteCategoryById/${selectedUserId}`, {
+      const response = await fetch(`http://localhost:5000/v1/api/superadmin/course/deleteCourseById/${selectedUserId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${user.token}`,
@@ -147,7 +154,7 @@ function EnhancedTableToolbar(props) {
           id="tableTitle"
           component="div"
         >
-          Categories
+          Courses
         </Typography>
       )}
       <Tooltip title="Create">
@@ -180,7 +187,7 @@ EnhancedTableToolbar.propTypes = {
   users: PropTypes.array.isRequired,
 };
 
-export default function TableCategories() {
+export default function TableCourse() {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('full_name');
   const [selected, setSelected] = useState([]);
@@ -302,7 +309,7 @@ export default function TableCategories() {
         if (!user || !user.token) {
           throw new Error('No token found');
         }
-        const response = await fetch('http://localhost:5000/v1/api/superadmin/categories/getAllCategories',{
+        const response = await fetch('http://localhost:5000/v1/api/superadmin/course/getAllCourses',{
           headers: {
             'Authorization': `Bearer ${user.token}`,
             'Content-Type': 'application/json',
@@ -458,10 +465,17 @@ export default function TableCategories() {
                     </TableCell>
                     <TableCell align="left">{row._id}</TableCell>
                     <TableCell component="th" id={labelId} scope="row" padding="none">
-                      {row.name_cat}
+                      {row.title}
                     </TableCell>
-                    <TableCell align="left">{row.desc}</TableCell>
-                    <TableCell align="left">{row.user_id}</TableCell>
+                    <TableCell align="left">{row.description}</TableCell>
+                    <TableCell align="left">{row.difficulty}</TableCell>
+                    <TableCell align="left">{row.cat_type}</TableCell>
+                    <TableCell align="left">{row.price}</TableCell>
+                    <TableCell align="left">{row.stars}</TableCell>
+                    <TableCell align="left">{row.file}</TableCell>
+                    <TableCell align="left">{row.created_at}</TableCell>
+                    <TableCell align="left">{row.created_by}</TableCell>
+                    <TableCell align="left">{row.thumbnail}</TableCell>
                   </TableRow>
                 );
               })}
