@@ -37,6 +37,8 @@ const headCells = [
   { id: 'created_at', numeric: false, disablePadding: false, label: 'Created' },
   { id: 'created_by', numeric: false, disablePadding: false, label: 'Created By' },
   { id: 'thumbnail', numeric: false, disablePadding: false, label: 'Thumbnail' },
+  { id: 'photos', numeric: false, disablePadding: false, label: 'Photo' },
+  { id: 'video', numeric: false, disablePadding: false, label: 'Video' },
 ];
 
 function EnhancedTableHead(props) {
@@ -134,7 +136,7 @@ function EnhancedTableToolbar(props) {
       }}
     >
       <Snackbar
-        open={snackbarOpen} // Atur properti open berdasarkan state
+        open={snackbarOpen}
         autoHideDuration={6000}
         message="You Can't delete all user"
       />
@@ -476,6 +478,12 @@ export default function TableCourse() {
                     <TableCell align="left">{row.created_at}</TableCell>
                     <TableCell align="left">{row.created_by}</TableCell>
                     <TableCell align="left">{row.thumbnail}</TableCell>
+                    <TableCell align="left">
+                      <img style={{width: "150px", height: "auto"}} src={row.photos} alt="Photo" />
+                    </TableCell>
+                    <TableCell align="left">
+                      <video style={{width: "150px", height: "auto"}} src={row.video} controls></video>
+                    </TableCell>
                   </TableRow>
                 );
               })}
