@@ -214,43 +214,52 @@ export default function TableCourse() {
       desc: ''
     });
   };
+  const [newCourse, setNewCourse] = useState({
+    title: '',
+    description: '',
+    difficulty: '',
+    cat_type: '',
+    price: '',
+    stars: '',
+    file: '',
+    thumbnail: '',
+    photos: '',
+    video: '',
+  });
+
+  const handleCreateSubmit = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user || !user.token) {
+      throw new Error('No token found');
+    }
+    const formData = new FormData();
+    formData.append('title', newCourse.title);
+    formData.append('description', newCourse.description);
+    formData.append('difficulty', newCourse.difficulty);
+    formData.append('cat_type', newCourse.cat_type);
+    formData.append('price', newCourse.price);
+    formData.append('stars', newCourse.stars);
+    formData.append('file', newCourse.file);
+    formData.append('thumbnail', newCourse.thumbnail);
+    formData.append('photos', newCourse.photos);
+    formData.append('video', newCourse.video);
+
+    const response = await fetch('http://localhost:5000/v1/api/superadmin/course/createCourse', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${user.token}`,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+    setUsers([...users, data.course]);
+    handleCreateClose();
+  };
   const handleCreateChange = (e) => {
     const { name, value } = e.target;
-    setNewCategory({ ...newCategory, [name]: value });
+    setNewCourse({ ...newCourse, [name]: value });
   };
-  const handleCreateSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (!user || !user.token) {
-        throw new Error('No token found');
-      }
-      const response = await fetch('http://localhost:5000/v1/api/superadmin/categories/postCat', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${user.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name_cat: newCategory.name_cat,
-          desc: newCategory.desc,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const createdCategory = await response.json();
-      setUsers([...users, createdCategory]);
-      setIsCreateOpen(false);
-      setNewCategory({
-        name_cat: '',
-        desc: ''
-      });
-    } catch (error) {
-      console.error('Error creating category:', error);
-    }
-  };
-  
   const [editUser, setEditUser] = useState({
     name_cat: '',
     desc: ''
@@ -477,12 +486,15 @@ export default function TableCourse() {
                     <TableCell align="left">{row.file}</TableCell>
                     <TableCell align="left">{row.created_at}</TableCell>
                     <TableCell align="left">{row.created_by}</TableCell>
-                    <TableCell align="left">{row.thumbnail}</TableCell>
                     <TableCell align="left">
-                      <img style={{width: "150px", height: "auto"}} src={row.photos} alt="Photo" />
+                      <img style={{width: "150px", height: "auto"}} src={`http://localhost:5000/${row.thumbnail}`}></img>
                     </TableCell>
                     <TableCell align="left">
-                      <video style={{width: "150px", height: "auto"}} src={row.video} controls></video>
+                      <img style={{width: "150px", height: "auto"}} src={`http://localhost:5000/${row.photos}`}></img>
+                    </TableCell>
+                    {console.log(row.photos)}
+                    <TableCell align="left">
+                      <video style={{width: "150px", height: "auto"}} src={`http://localhost:5000/${row.video}`} controls></video>
                     </TableCell>
                   </TableRow>
                 );
@@ -507,27 +519,102 @@ export default function TableCourse() {
       </Paper>
       {isCreateOpen && (
         <Dialog open={isCreateOpen} onClose={handleCreateClose}>
-          <DialogTitle>Create Category</DialogTitle>
-          <DialogContent>
-            <TextField
-              margin="dense"
-              label="Category Name"
-              type="text"
-              fullWidth
-              name="name_cat"
-              value={newCategory.name_cat}
+        <DialogTitle>Create Course</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            name="title"
+            label="Title"
+            type="text"
+            fullWidth
+            value={newCourse.title}
+            onChange={handleCreateChange}
+          />
+          <TextField
+            margin="dense"
+            name="description"
+            label="Description"
+            type="text"
+            fullWidth
+            value={newCourse.description}
+            onChange={handleCreateChange}
+          />
+          <TextField
+            margin="dense"
+            name="difficulty"
+            label="Difficulty"
+            type="text"
+            fullWidth
+            value={newCourse.difficulty}
+            onChange={handleCreateChange}
+          />
+          <TextField
+            margin="dense"
+            name="cat_type"
+            label="Category Type"
+            type="text"
+            fullWidth
+            value={newCourse.cat_type}
+            onChange={handleCreateChange}
+          />
+          <TextField
+            margin="dense"
+            name="price"
+            label="Price"
+            type="text"
+            fullWidth
+            value={newCourse.price}
+            onChange={handleCreateChange}
+          />
+          <TextField
+            margin="dense"
+            name="stars"
+            label="Stars"
+            type="text"
+            fullWidth
+            value={newCourse.stars}
+            onChange={handleCreateChange}
+          />
+          <TextField
+            margin="dense"
+            name="file"
+            label="File"
+            type="text"
+            fullWidth
+            value={newCourse.file}
+            onChange={handleCreateChange}
+          />
+          <Button
+            variant="contained"
+            component="label"
+          >
+            Upload Thumbnail
+            <input
+              type="file"
+              hidden
+              value={newCourse.thumbnail}
               onChange={handleCreateChange}
             />
-            <TextField
-              margin="dense"
-              label="Description"
-              type="text"
-              fullWidth
-              name="desc"
-              value={newCategory.desc}
-              onChange={handleCreateChange}
-            />
-          </DialogContent>
+          </Button>
+          <TextField
+            margin="dense"
+            name="photos"
+            label="Photos"
+            type="text"
+            fullWidth
+            value={newCourse.photos}
+            onChange={handleCreateChange}
+          />
+          <TextField
+            margin="dense"
+            name="video"
+            label="Video"
+            type="text"
+            fullWidth
+            value={newCourse.video}
+            onChange={handleCreateChange}
+          />
+        </DialogContent>
           <DialogActions>
             <Button onClick={handleCreateClose}>Cancel</Button>
             <Button onClick={handleCreateSubmit}>Save</Button>
