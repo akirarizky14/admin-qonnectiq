@@ -23,11 +23,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Dialog, DialogTitle, DialogContent, DialogActions,TextField,Button } from '@mui/material';
 import Snackbar from '@mui/material/Snackbar';
 import AddIcon from '@mui/icons-material/Add';
-
+import Switch from '@mui/material/Switch';
 const headCells = [
   { id: 'edit', numeric: false, disablePadding: true, label: 'Edit' },
   { id: 'id', numeric: false, disablePadding: true, label: 'Course ID' },
   { id: 'title', numeric: false, disablePadding: true, label: 'Title' },
+  { id: 'events', numeric: false, disablePadding: false, label: 'Events' },
   { id: 'description', numeric: false, disablePadding: false, label: 'Description' },
   { id: 'difficulty', numeric: false, disablePadding: false, label: 'Difficulty' },
   { id: 'cat_type', numeric: false, disablePadding: false, label: 'Category Type' },
@@ -191,7 +192,7 @@ EnhancedTableToolbar.propTypes = {
 
 export default function TableCourse() {
   const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('full_name');
+  const [orderBy, setOrderBy] = useState('');
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(true);
@@ -200,8 +201,8 @@ export default function TableCourse() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newCategory, setNewCategory] = useState({
-    name_cat: '',
-    desc: ''
+    title: '',
+    description: ''
   });
   const handleCreateClick = () => {
     setIsCreateOpen(true);
@@ -210,8 +211,8 @@ export default function TableCourse() {
   const handleCreateClose = () => {
     setIsCreateOpen(false);
     setNewCategory({
-      name_cat: '',
-      desc: ''
+      title: '',
+      description: ''
     });
   };
   const [newCourse, setNewCourse] = useState({
@@ -225,51 +226,75 @@ export default function TableCourse() {
     thumbnail: '',
     photos: '',
     video: '',
+    events: '',
   });
 
   const handleCreateSubmit = async () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user || !user.token) {
-      throw new Error('No token found');
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user || !user.token) {
+        throw new Error('No token found');
+      }
+  
+      const formData = new FormData();
+      formData.append('title', newCourse.title);
+      formData.append('description', newCourse.description);
+      formData.append('difficulty', newCourse.difficulty);
+      formData.append('cat_type', newCourse.cat_type);
+      formData.append('price', newCourse.price);
+      formData.append('stars', newCourse.stars);
+      formData.append('file', newCourse.file);
+      formData.append('thumbnail', newCourse.thumbnail); 
+      formData.append('photos', newCourse.photos); 
+      formData.append('video', newCourse.video); 
+      formData.append('events', newCourse.events ? 'true' : 'false');
+  
+      console.log("Form Data: ", Object.fromEntries(formData.entries())); // Log the data being sent
+  
+      const response = await fetch('http://localhost:5000/v1/api/superadmin/course/postCourse', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+        },
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to create course: ${response.statusText} - ${errorText}`);
+      }
+  
+      const data = await response.json();
+      setUsers([...users, data.course]);
+      handleCreateClose();
+    } catch (error) {
+      console.error('Error creating course:', error.message);
     }
-    const formData = new FormData();
-    formData.append('title', newCourse.title);
-    formData.append('description', newCourse.description);
-    formData.append('difficulty', newCourse.difficulty);
-    formData.append('cat_type', newCourse.cat_type);
-    formData.append('price', newCourse.price);
-    formData.append('stars', newCourse.stars);
-    formData.append('file', newCourse.file);
-    formData.append('thumbnail', newCourse.thumbnail);
-    formData.append('photos', newCourse.photos);
-    formData.append('video', newCourse.video);
-
-    const response = await fetch('http://localhost:5000/v1/api/superadmin/course/createCourse', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${user.token}`,
-      },
-      body: formData,
-    });
-
-    const data = await response.json();
-    setUsers([...users, data.course]);
-    handleCreateClose();
   };
+  
+  
+  const handleFileChange = (e, type) => {
+    const file = e.target.files[0];
+    setNewCourse((prevCourse) => ({
+      ...prevCourse,
+      [type]: file,
+    }));
+  };
+  
   const handleCreateChange = (e) => {
     const { name, value } = e.target;
     setNewCourse({ ...newCourse, [name]: value });
   };
   const [editUser, setEditUser] = useState({
-    name_cat: '',
-    desc: ''
+    title: '',
+    description: ''
   });
 
   const handleEditClick = (user) => {
     setEditUser({
       _id: user._id,
-      name_cat: user.name_cat || '',
-      desc: user.desc || ''
+      title: user.title || '',
+      description: user.description || ''
     });
     setIsEditOpen(true);
   };
@@ -290,15 +315,15 @@ export default function TableCourse() {
       if (!user || !user.token) {
         throw new Error('No token found');
       }
-      const response = await fetch(`http://localhost:5000/v1/api/superadmin/categories/updateCategoryById/${editUser._id}`, {
+      const response = await fetch(`http://localhost:5000/v1/api/superadmin/course/updateCourseById/${editUser._id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${user.token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name_cat: editUser.name_cat,
-          desc: editUser.desc,
+          title: editUser.title,
+          description: editUser.description,
         }),
       });
       if (!response.ok) {
@@ -331,6 +356,7 @@ export default function TableCourse() {
         }
         const data = await response.json();
         setUsers(data);
+        console.log(data)
       } catch (error) {
         console.error('Error fetching users:', error);
       }
@@ -343,22 +369,20 @@ export default function TableCourse() {
     setOrder(isAsc ?  'desc'  : 'asc');
     setOrderBy(property);
   };
-  // Fungsi perbandingan untuk sorting data
-  const getComparator = (order, orderBy) => {
-    return order === 'desc'
-        ? (a, b) => descendingComparator(a[orderBy], b[orderBy])
-        : (a, b) => -descendingComparator(a[orderBy], b[orderBy]);
-  };
+const getComparator = (order, orderBy) => {
+  return order === 'desc'
+    ? (a, b) => descendingComparator(a?.[orderBy], b?.[orderBy])
+    : (a, b) => -descendingComparator(a?.[orderBy], b?.[orderBy]);
+};
 
-  const descendingComparator = (a, b) => {
-    if (b < a) {
-        return -1;
-    }
-    if (b > a) {
-        return 1;
-    }
-    return 0;
-  };
+// descendingComparator function with additional null checks
+const descendingComparator = (a, b) => {
+  if (a === undefined || a === null) return 1;
+  if (b === undefined || b === null) return -1;
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+};
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
       const newSelected = users.map((user) => user.id);
@@ -451,6 +475,8 @@ export default function TableCourse() {
                 const isItemSelected = isSelected(row._id);
                 const labelId = `enhanced-table-checkbox-${index}`;
 
+                const createdAt = new Date(row.created_at);
+                const formattedDateTime = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${String(createdAt.getDate()).padStart(2, '0')} ${String(createdAt.getHours()).padStart(2, '0')}:${String(createdAt.getMinutes()).padStart(2, '0')}:${String(createdAt.getSeconds()).padStart(2, '0')}`;
                 return (
                   <TableRow
                     hover
@@ -475,33 +501,37 @@ export default function TableCourse() {
                       </IconButton>
                     </TableCell>
                     <TableCell align="left">{row._id}</TableCell>
-                    <TableCell component="th" id={labelId} scope="row" padding="none">
-                      {row.title}
-                    </TableCell>
+                    <TableCell align="left">{row.title}</TableCell>
+                    <TableCell align="left">{row.events ? 'Yes' : 'No'}</TableCell>
                     <TableCell align="left">{row.description}</TableCell>
                     <TableCell align="left">{row.difficulty}</TableCell>
                     <TableCell align="left">{row.cat_type}</TableCell>
                     <TableCell align="left">{row.price}</TableCell>
                     <TableCell align="left">{row.stars}</TableCell>
                     <TableCell align="left">{row.file}</TableCell>
-                    <TableCell align="left">{row.created_at}</TableCell>
+                    <TableCell align="left">{formattedDateTime}</TableCell>
                     <TableCell align="left">{row.created_by}</TableCell>
                     <TableCell align="left">
-                      <img style={{width: "150px", height: "auto"}} src={`http://localhost:5000/${row.thumbnail}`}></img>
+                      {row.thumbnail && (
+                        <img style={{ width: "150px", height: "auto" }} src={`http://localhost:5000/${row.thumbnail}`} alt="Thumbnail" />
+                      )}
                     </TableCell>
                     <TableCell align="left">
-                      <img style={{width: "150px", height: "auto"}} src={`http://localhost:5000/${row.photos}`}></img>
+                      {row.photos && (
+                        <img style={{ width: "150px", height: "auto" }} src={`http://localhost:5000/${row.photos}`} alt="Photos" />
+                      )}
                     </TableCell>
-                    {console.log(row.photos)}
                     <TableCell align="left">
-                      <video style={{width: "150px", height: "auto"}} src={`http://localhost:5000/${row.video}`} controls></video>
+                      {row.video && (
+                        <video style={{ width: "150px", height: "auto" }} src={`http://localhost:5000/${row.video}`} controls />
+                      )}
                     </TableCell>
                   </TableRow>
                 );
               })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
-                  <TableCell colSpan={9} />
+                  <TableCell colSpan={15} />
                 </TableRow>
               )}
             </TableBody>
@@ -584,36 +614,47 @@ export default function TableCourse() {
             value={newCourse.file}
             onChange={handleCreateChange}
           />
-          <Button
-            variant="contained"
-            component="label"
-          >
-            Upload Thumbnail
-            <input
-              type="file"
-              hidden
-              value={newCourse.thumbnail}
-              onChange={handleCreateChange}
-            />
-          </Button>
+          <TextField
+            margin="dense"
+            name="thumbnail"
+            label="Thumbnail"
+            type="file"
+            fullWidth
+            onChange={(e) => handleFileChange(e, 'thumbnail')}
+          />
           <TextField
             margin="dense"
             name="photos"
             label="Photos"
-            type="text"
+            type="file"
             fullWidth
-            value={newCourse.photos}
-            onChange={handleCreateChange}
+            onChange={(e) => handleFileChange(e, 'photos')}
           />
-          <TextField
-            margin="dense"
-            name="video"
-            label="Video"
-            type="text"
-            fullWidth
-            value={newCourse.video}
-            onChange={handleCreateChange}
+          <input
+            type="file"
+            id="video-upload"
+            style={{ display: 'none' }}
+            onChange={(e) => handleFileChange(e, 'video')}
           />
+          <label htmlFor="video-upload">
+            <Button
+              component="span"
+              role={undefined}
+              variant="contained"
+              tabIndex={-1}
+              fullWidth
+            >
+              Upload Video
+            </Button>
+          </label>
+          <label>
+            Events
+            <Switch
+              name='Events'
+              checked={Boolean(newCourse.events)}
+              onChange={(e) => handleCreateChange({ target: { name: 'events', value: e.target.checked } })}
+            />
+          </label>
         </DialogContent>
           <DialogActions>
             <Button onClick={handleCreateClose}>Cancel</Button>
@@ -631,8 +672,8 @@ export default function TableCourse() {
               label="Category Name"
               type="text"
               fullWidth
-              name="name_cat"
-              value={editUser.name_cat}
+              name="title"
+              value={editUser.title}
               onChange={handleEditChange}
             />
             <TextField
@@ -640,8 +681,8 @@ export default function TableCourse() {
               label="Description"
               type="text"
               fullWidth
-              name="desc"
-              value={editUser.desc}
+              name="description"
+              value={editUser.description}
               onChange={handleEditChange}
             />
           </DialogContent>
